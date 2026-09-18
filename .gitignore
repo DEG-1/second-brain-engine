@@ -1,0 +1,33 @@
+# Datos de usuario y estado local (modo portatil)
+userdata/
+config.yaml
+
+# Entorno virtual
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Bases de datos (incluye los sidecar de WAL: -wal y -shm)
+*.sqlite
+*.sqlite-*
+
+# Empaquetado (fase 9)
+dist/
+build/
+
+# Caches de herramientas
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Sistema
+Thumbs.db
+desktop.ini
+
+# La semilla del repo de pruebas E2E SI se versiona: las reglas de arriba
+# no deben tragarsela. Debe ir al final para ganar.
+!tests/fixtures/sample_repo/**

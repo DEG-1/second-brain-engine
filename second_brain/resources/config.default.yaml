@@ -1,0 +1,129 @@
+# Configuracion POR DEFECTO de Second Brain (recurso empaquetado).
+# Spec: seccion 22.
+#
+# Este es el archivo canonico. En el primer arranque, config.py lo copia
+# a userdata/config.yaml, que es el que edita el usuario.
+# config.example.yaml de la raiz del repo es una copia para documentacion.
+#
+# Precedencia (implementada solo en config.py):
+#   --config <ruta>  >  $SECOND_BRAIN_HOME/config.yaml
+#   >  userdata/config.yaml  >  este archivo
+#
+# Leer siempre con encoding='utf-8-sig': si el usuario edita su copia con
+# Notepad, Windows escribe BOM y PyYAML falla con un error criptico.
+
+application:
+  name: "Second Brain"
+  timezone: "America/Bogota"
+  max_parallel_workers: 3
+  discussion_messages_per_coordinator: 3
+  # Turnos por coordinador en EXECUTING/CORRECTING (spec 7.5). El bucle se
+  # corta antes si el coordinador se bloquea o un turno no avanza nada.
+  execution_turns_per_coordinator: 3
+  # Comando de pruebas re-ejecutado tras rebasar la segunda rama en la
+  # integracion secuencial (spec 18, paso 4). Lista vacia = sin comando:
+  # el re-test se salta con un warning explicito. Ej.: ["pytest", "-q"].
+  test_command: []
+  # "fake" = adaptadores simulados, sin cuota (spec 30).
+  # "real" = las CLIs de verdad (Fase 2+): CONSUME CUOTA. Tambien puede
+  # activarse por sesion con el flag --real. La demo siempre usa fake.
+  adapter_mode: "fake"
+
+coordinators:
+  fable:
+    provider: "claude"
+    command: "claude"
+    model: null
+    minimum_version: null   # fijar tras la primera instalacion validada
+    enabled: true
+  sol:
+    provider: "codex"
+    command: "codex"
+    model: null
+    minimum_version: null   # fijar tras la primera instalacion validada
+    enabled: true
+
+workers:
+  models:
+    claude: "haiku"         # modelo pequeno por defecto para workers
+    codex: null             # null = default de la CLI
+  per_type: {}              # overrides por tipo, ej. {"security_reviewer": "sonnet"}
+
+memory:
+  max_initial_summaries: 3
+  max_initial_files: 8
+  max_conversation_fragments: 3
+  enable_embeddings: false
+
+budgets:
+  planning_tokens: 120000
+  execution_tokens: 100000
+  review_tokens: 30000
+  closing_tokens: 8000
+  worker_default_tokens: 8000
+  compaction_reserve_tokens: 3000
+
+retention:
+  checkpoints_keep: 50
+  events_keep_days: 90
+  logs_keep_days: 30
+  outputs_keep_days: 90
+  conversations: never_delete
+
+git:
+  use_worktrees: true
+  auto_commit: false
+  auto_merge: false
+  auto_push: false
+
+security:
+  allow_network: false
+  allow_dependency_install: false
+  allow_database_migrations: false
+  protected_paths:
+    - ".env"
+    - "production/"
+    - "secrets/"
+  # Aditivo: solo puede ANADIR bloqueos, nunca desbloquear los de
+  # resources/data/blocked_commands.yaml
+  extra_blocked_commands_file: null
+
+retrieval:
+  # Glosarios adicionales es->en; se fusionan de forma aditiva sobre
+  # resources/data/tech_glossary_es_en.yaml (seccion 12)
+  extra_glossary_files: []
+
+paths:
+  # Relativos a la raiz del proyecto del usuario:
+  vault_dir: ".agent_vault"
+  worktrees_dir: ".agent_worktrees"
+  # Globales de la aplicacion. null = default portatil (<app>/userdata).
+  # La variable de entorno SECOND_BRAIN_HOME tiene prioridad sobre estos.
+  user_data_dir: null          # config.yaml, overrides de prompts y datos
+  user_state_dir: null         # registro, logs y cache
+  projects_registry: null      # default: <user_state_dir>/projects.json
+  prompts_override_dir: null   # default: <user_data_dir>/prompts
+
+projects:
+  recent_limit: 20
+  auto_register_on_open: true
+  prune_missing: false         # nunca borrar entradas sin confirmacion humana
+
+cli_cache:
+  ttl_hours: 24
+  revalidate_on_binary_change: true   # compara mtime + tamano del .CMD resuelto
+
+logging:
+  level: "info"
+  # Relativo a la RAIZ DEL PROYECTO del usuario (log por proyecto):
+  file: ".agent_vault/archive/logs/app.log"
+  # Log global, activo desde el arranque y ANTES de abrir proyecto.
+  # null = default: <user_state_dir>/logs/app.log
+  global_file: null
+  max_bytes: 5242880
+  backup_count: 5
+
+ui:
+  refresh_rate_ms: 250
+  show_raw_logs_by_default: false
+  theme: "dark"

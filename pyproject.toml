@@ -1,0 +1,69 @@
+[project]
+name = "second-brain"
+version = "0.1.0"
+description = "Segundo cerebro multiagente 100% Python: orquesta Claude Code y Codex CLI con memoria persistente"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+dependencies = [
+    "pydantic>=2.7",
+    "PyYAML>=6.0",
+    "aiosqlite>=0.20",
+    "textual>=0.58",
+    "psutil>=5.9",
+    # Windows no trae base de datos de zonas horarias; sin esto,
+    # ZoneInfo("America/Bogota") falla (config application.timezone).
+    "tzdata>=2024.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "types-PyYAML>=6.0",
+]
+# Indexado con Tree-sitter (spec seccion 11). Opcional a proposito: la
+# seccion 11 exige un respaldo de extraccion simple cuando no hay parser,
+# y esto no se necesita hasta la FASE 4. Instalar con: pip install -e ".[index]"
+index = [
+    "tree-sitter>=0.24",
+    "tree-sitter-language-pack>=1.0",
+]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["second_brain*"]
+
+# Sin esto los recursos NO se instalan con el paquete: prompts, plantillas,
+# glosario, respuestas del fake_adapter, migraciones SQL y el tema de Textual
+# son datos, y setuptools solo empaqueta .py por defecto.
+[tool.setuptools.package-data]
+second_brain = [
+    "resources/**/*",
+    "memory/migrations/*.sql",
+    "ui/*.tcss",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+exclude = ["^build/", "^dist/", "^\\.venv/"]
+
+[[tool.mypy.overrides]]
+module = ["tree_sitter_language_pack.*", "psutil"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
